@@ -1,0 +1,51 @@
+version: '3.3'
+services:
+  calendar_microservice:
+    container_name: calendar_microservice
+    hostname: calendar_microservice
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/usr/src/app"
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+      - POSTGRES_HOST=calendar_microservice_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=test
+      - POSTGRES_SYNC=false
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE_NAME=users-authentication
+      - AUTHENTICATION_MICROSERVICE_TOKEN=XJS87^M5MGfJ
+    command: npm run start:dev
+    ports:
+      - "4001:4001"
+    expose:
+      - 4001
+    networks:
+      - default
+  calendar_microservice_db:
+    container_name: calendar_microservice_db
+    hostname: calendar_microservice_db
+    image: postgres:latest
+    restart: always
+    ports:
+    - "5433:5433"
+    volumes:
+    - ./data/postgres:/data/postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: test
+    networks:
+      - default
+networks:
+   default:
+    external:
+      name: rabbitmq_network

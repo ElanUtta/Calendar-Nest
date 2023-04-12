@@ -1,0 +1,70 @@
+version: '3.3'
+
+services:
+  calendar_microservice:
+    container_name: calendar_microservice
+    hostname: calendar_microservice
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/usr/src/app"
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+      - MYSQL_HOST=calendar_microservice_db
+      - MYSQL_PORT=5432
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_DB=test
+      - MYSQL_SYNC=true
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_HOST=calendar_rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE_NAME=event
+      - AUTHENTICATION_MICROSERVICE_TOKEN=XJS87^M5MGfJ
+    command: npm run start:dev
+    ports:
+      - "4001:4001"
+    expose:
+      - 4001
+    networks:
+      - default
+
+  calendar_microservice_db:
+    container_name: calendar_microservice_db
+    hostname: calendar_microservice_db
+    image: mysql:latest
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3036"
+    volumes:
+      - ./data/postgres:/data/postgres
+    environment:
+      MYSQL_USER: admin
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DB: test
+    networks:
+      - default
+
+  calendar_rabbitmq:
+    container_name: calendar_rabbitmq
+    hostname: calendar_rabbitmq
+    image: rabbitmq:3-management
+    volumes:
+      - /var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks:
+      - default
+
+networks:
+   default:
+    name: calendar_network
